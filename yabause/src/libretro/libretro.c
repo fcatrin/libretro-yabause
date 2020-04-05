@@ -932,10 +932,6 @@ bool retro_load_game(const struct retro_game_info *info)
    if (!info)
       return false;
 
-   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
-   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
-      return false;
-
    check_variables();
 
    snprintf(full_path, sizeof(full_path), "%s", info->path);
