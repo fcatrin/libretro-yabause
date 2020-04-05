@@ -424,7 +424,7 @@ int YabSaveStateStream(FILE *stream);
 int YabLoadStateStream(FILE *stream);
 int YabSaveStateBuffer(void **buffer, size_t *size);
 int YabLoadStateBuffer(const void *buffer, size_t size);
-
+void YabSaveStateSetTmpPath(const char *dirpath);
 
 u8 FASTCALL UnhandledMemoryReadByte(USED_IF_DEBUG u32 addr);
 u16 FASTCALL UnhandledMemoryReadWord(USED_IF_DEBUG u32 addr);

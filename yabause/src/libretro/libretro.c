@@ -958,6 +958,11 @@ bool retro_load_game(const struct retro_game_info *info)
 
    extract_basename(game_basename, info->path, sizeof(game_basename));
 
+   snprintf(bup_path, sizeof(bup_path), "%s/../retrox_save_state.tmp", g_save_dir);
+   log_cb(RETRO_LOG_INFO, "set tmp save state file as : %s", bup_path);
+
+   YabSaveStateSetTmpPath(bup_path);
+
    snprintf(bup_path, sizeof(bup_path), "%s%c%s.srm", g_save_dir, slash, game_basename);
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);

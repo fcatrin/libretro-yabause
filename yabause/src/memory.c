@@ -64,6 +64,8 @@
 #include "sh2trace.h"
 #endif
 
+char save_state_tmp_file[1024];
+
 //////////////////////////////////////////////////////////////////////////////
 
 u8 *SH1Rom;
@@ -1297,6 +1299,11 @@ void FormatBackupRam(void *mem, u32 size)
 
 //////////////////////////////////////////////////////////////////////////////
 
+
+void YabSaveStateSetTmpPath(const char *path) {
+   strcpy(save_state_tmp_file, path);
+}
+
 int YabSaveStateBuffer(void ** buffer, size_t * size)
 {
    FILE * fp;
@@ -1306,7 +1313,7 @@ int YabSaveStateBuffer(void ** buffer, size_t * size)
    if (buffer != NULL) *buffer = NULL;
    *size = 0;
 
-   fp = tmpfile();
+   fp = fopen(save_state_tmp_file, "w+b");
 
    status = YabSaveStateStream(fp);
    if (status != 0)
@@ -1474,7 +1481,7 @@ int YabSaveStateStream(FILE *fp)
 
    free(buf);
 
-   OSDPushMessage(OSDMSG_STATUS, 150, "STATE SAVED");
+   // OSDPushMessage(OSDMSG_STATUS, 150, "STATE SAVED");
 
    return 0;
 }
@@ -1486,7 +1493,7 @@ int YabLoadStateBuffer(const void * buffer, size_t size)
    FILE * fp;
    int status;
 
-   fp = tmpfile();
+   fp = fopen(save_state_tmp_file, "w+b");
    fwrite(buffer, 1, size, fp);
 
    fseek(fp, 0, SEEK_SET);
@@ -1728,7 +1735,7 @@ int YabLoadStateStream(FILE *fp)
 
    ScspUnMuteAudio(SCSP_MUTE_SYSTEM);
 
-   OSDPushMessage(OSDMSG_STATUS, 150, "STATE LOADED");
+   // OSDPushMessage(OSDMSG_STATUS, 150, "STATE LOADED");
 
    return 0;
 }
