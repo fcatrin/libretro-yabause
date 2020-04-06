@@ -1383,6 +1383,7 @@ int YabSaveStateStream(FILE *fp)
    int outputheight;
    int movieposition;
    int temp;
+   int version;
    u32 temp32;
 
    check.done = 0;
@@ -1398,19 +1399,27 @@ int YabSaveStateStream(FILE *fp)
    fputc(0x01, fp);
 #endif
 
-   // Write version(fix me)
-   i = 2;
+   // Write version
+#ifdef STATE_VERSION
+   version = STATE_VERSION;
+#else
+   version = 2;
+#endif
+   i = version;
    ywrite(&check, (void *)&i, sizeof(i), 1, fp);
 
-   // Skip the next 4 bytes for now
+   // Skip the next 4 bytes for now. Size will be written here at the end
    i = 0;
    ywrite(&check, (void *)&i, sizeof(i), 1, fp);
 
-   //write frame number
-   ywrite(&check, (void *)&framecounter, 4, 1, fp);
+   if (version >= 2) { // version 2 includes movie
 
-   //this will be updated with the movie position later
-   ywrite(&check, (void *)&framecounter, 4, 1, fp);
+	   //write frame number
+	   ywrite(&check, (void *)&framecounter, 4, 1, fp);
+
+	   //this will be updated with the movie position later
+	   ywrite(&check, (void *)&framecounter, 4, 1, fp);
+   }
 
    // Go through each area and write each state
    i += CartSaveState(fp);
@@ -1443,41 +1452,46 @@ int YabSaveStateStream(FILE *fp)
    ywrite(&check, (void *)&yabsys.CurSH2FreqType, sizeof(int), 1, fp);
    ywrite(&check, (void *)&yabsys.IsPal, sizeof(int), 1, fp);
 
-   VIDCore->GetGlSize(&outputwidth, &outputheight);
+   if (version >= 2) {
+	   VIDCore->GetGlSize(&outputwidth, &outputheight);
 
-   totalsize=outputwidth * outputheight * sizeof(u32);
+	   totalsize=outputwidth * outputheight * sizeof(u32);
 
-   if ((buf = (u8 *)malloc(totalsize)) == NULL)
-   {
-      return -2;
+	   if ((buf = (u8 *)malloc(totalsize)) == NULL)
+	   {
+		  return -2;
+	   }
+
+	   YuiSwapBuffers();
+	   #ifdef USE_OPENGL
+	   glPixelZoom(1,1);
+	   glReadBuffer(GL_BACK);
+	   glReadPixels(0, 0, outputwidth, outputheight, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+	   #else
+	   memcpy(buf, dispbuffer, totalsize);
+	   #endif
+	   YuiSwapBuffers();
+
+	   ywrite(&check, (void *)&outputwidth, sizeof(outputwidth), 1, fp);
+	   ywrite(&check, (void *)&outputheight, sizeof(outputheight), 1, fp);
+
+	   ywrite(&check, (void *)buf, totalsize, 1, fp);
+
+	   movieposition=ftell(fp);
+	   //write the movie to the end of the savestate
+	   SaveMovieInState(fp, check);
    }
-
-   YuiSwapBuffers();
-   #ifdef USE_OPENGL
-   glPixelZoom(1,1);
-   glReadBuffer(GL_BACK);
-   glReadPixels(0, 0, outputwidth, outputheight, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-   #else
-   memcpy(buf, dispbuffer, totalsize);
-   #endif
-   YuiSwapBuffers();
-
-   ywrite(&check, (void *)&outputwidth, sizeof(outputwidth), 1, fp);
-   ywrite(&check, (void *)&outputheight, sizeof(outputheight), 1, fp);
-
-   ywrite(&check, (void *)buf, totalsize, 1, fp);
-
-   movieposition=ftell(fp);
-   //write the movie to the end of the savestate
-   SaveMovieInState(fp, check);
 
    i += StateFinishHeader(fp, offset);
 
    // Go back and update size
    fseek(fp, 8, SEEK_SET);
    ywrite(&check, (void *)&i, sizeof(i), 1, fp);
-   fseek(fp, 16, SEEK_SET);
-   ywrite(&check, (void *)&movieposition, sizeof(movieposition), 1, fp);
+
+   if (version >= 2) {
+	   fseek(fp, 16, SEEK_SET);
+	   ywrite(&check, (void *)&movieposition, sizeof(movieposition), 1, fp);
+   }
 
    free(buf);
 
