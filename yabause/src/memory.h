@@ -437,6 +437,7 @@ extern "C" {
   int YabLoadStateStream(FILE *stream);
   int YabSaveStateBuffer(void **buffer, size_t *size);
   int YabLoadStateBuffer(const void *buffer, size_t size);
+  void YabSaveStateSetTmpPath(const char *dirpath);
 
 // Mapped mewmory
 void * YabMemMap(char * filename, u32 size );

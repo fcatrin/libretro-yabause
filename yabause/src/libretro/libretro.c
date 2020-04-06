@@ -1050,6 +1050,10 @@ bool retro_load_game(const struct retro_game_info *info)
       log_cb(RETRO_LOG_WARN, "HLE bios is enabled, this is for debugging purpose only, expect lots of issues\n");
    }
 
+   snprintf(bup_path, sizeof(bup_path), "%s/../retrox_save_state.tmp", g_save_dir);
+   log_cb(RETRO_LOG_INFO, "set tmp save state file as : %s", bup_path);
+   YabSaveStateSetTmpPath(bup_path);
+
    snprintf(bup_path, sizeof(bup_path), "%s%cyabasanshiro%cbackup.bin", g_save_dir, slash, slash);
 
    struct retro_input_descriptor desc[] = {
