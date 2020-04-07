@@ -1418,7 +1418,7 @@ int YabSaveStateStream(FILE *fp)
 #ifdef STATE_VERSION
    version = STATE_VERSION;
 #else
-   version = 2;
+   version = 1;
 #endif
    i = version;
    ywrite(&check, (void *)&i, sizeof(i), 1, fp);
