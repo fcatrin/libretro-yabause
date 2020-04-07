@@ -1414,16 +1414,6 @@ int CartSaveState(FILE * fp)
    fwrite((void *)&CartridgeArea->carttype, 4, 1, fp);
 
    // Write the areas associated with the cart type here
-   switch(CartridgeArea->carttype){
-      case CART_DRAM8MBIT: {
-         fwrite((void *)CartridgeArea->dram , 1, 0x100000, fp);
-         break;
-      }
-      case CART_DRAM32MBIT: {
-         fwrite((void *)CartridgeArea->dram , 1, 0x400000, fp);
-         break;
-      }
-   }
 
    return StateFinishHeader(fp, offset);
 }
@@ -1440,24 +1430,8 @@ int CartLoadState(FILE * fp, UNUSED int version, int size)
 
    // Check to see if old cart type and new cart type match, if they don't,
    // reallocate memory areas
-   if( newtype == CART_DRAM8MBIT || newtype == CART_DRAM32MBIT ) {
-       if( newtype != CartridgeArea->carttype ){
-       CartDeInit();
-       CartInit(NULL, newtype );
-       }
 
-       // Read the areas associated with the cart type here
-       switch(CartridgeArea->carttype){
-          case CART_DRAM8MBIT: {
-             fread((void *)CartridgeArea->dram , 1, 0x100000, fp);
-             break;
-          }
-          case CART_DRAM32MBIT: {
-             fread((void *)CartridgeArea->dram , 1, 0x400000, fp);
-             break;
-          }
-       }
-   }
+   // Read the areas associated with the cart type here
 
    return size;
 }
